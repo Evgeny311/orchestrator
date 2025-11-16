@@ -1,0 +1,24 @@
+# Vagrant
+.vagrant/
+*.log
+
+# Kubeconfig (contains cluster credentials)
+kubeconfig/
+
+# Environment files
+.env
+*.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+tmp/
