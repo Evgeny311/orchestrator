@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: inventory-app
-        image: yourusername/inventory-app:v1.0  # CHANGE THIS
+        image: evgeny311/inventory-app:v1.0  # CHANGE THIS
         ports:
         - containerPort: 8080
           name: http
@@ -46,10 +46,10 @@ spec:
         resources:
           requests:
             memory: "128Mi"
-            cpu: "50m"
+            cpu: "100m"
           limits:
             memory: "256Mi"
-            cpu: "100m"
+            cpu: "200m"
         livenessProbe:
           httpGet:
             path: /health

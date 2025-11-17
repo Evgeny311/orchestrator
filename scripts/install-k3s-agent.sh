@@ -25,7 +25,7 @@ echo "Joining cluster at $K3S_URL"
 curl -sfL https://get.k3s.io | K3S_URL=$K3S_URL K3S_TOKEN=$K3S_TOKEN sh -s - agent \
   --node-name k3s-agent \
   --node-ip 192.168.56.101 \
-  --flannel-iface eth1
+  --flannel-iface enp0s8
 
 # Wait for agent to join
 echo "Waiting for agent to join cluster..."

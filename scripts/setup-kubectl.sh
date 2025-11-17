@@ -7,7 +7,7 @@ echo "================================================"
 
 # Check if kubeconfig exists
 if [ ! -f kubeconfig/k3s.yaml ]; then
-    echo "❌ Error: kubeconfig/k3s.yaml not found!"
+    echo "Error: kubeconfig/k3s.yaml not found!"
     echo "Please run 'vagrant up' first to create the cluster."
     exit 1
 fi

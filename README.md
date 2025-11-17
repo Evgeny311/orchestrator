@@ -42,12 +42,12 @@ The application runs on a **K3s Kubernetes cluster** with 2 nodes:
 │  │ │Deploy  │ │StatefulSet│          │                     │    │
 │  │ │HPA 1-3 │ │       │  │           │                     │    │
 │  │ └───┬───┘  └───┬───┘  └───────────┘                     │    │
-│  │     │          │                                        │    │
-│  │ ┌───▼───┐  ┌───▼───┐                                    │    │
+│  │     │           │                                       │    │
+│  │ ┌───▼───┐   ┌───▼───┐                                   │    │
 │  │ │Inventory│ │Billing│                                   │    │
-│  │ │   DB   │ │  DB   │                                    │    │
+│  │ │   DB   │  │  DB   │                                   │    │
 │  │ │StatefulSet│StatefulSet│                               │    │
-│  │ │  +PV   │ │  +PV  │                                    │    │
+│  │ │  +PV   │  │  +PV  │                                   │    │
 │  │ └────────┘  └───────┘                                   │    │
 │  └─────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────┘
@@ -105,8 +105,8 @@ brew install kubectl
 ### System Requirements:
 
 - **RAM**: Minimum 6GB available (2GB per VM + 2GB for host)
-- **CPU**: 4+ cores recommended
-- **Disk**: 20GB free space
+- **CPU**: 2+ cores recommended
+- **Disk**: 10GB free space
 
 ## 📁 Project Structure
 ```
@@ -158,16 +158,60 @@ orchestrator/
 
 ### 1. Clone the Repository
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Evgeny311/orchestrator.git
 cd orchestrator
 ```
 
 ### 2. Build and Push Docker Images
 
-**Important**: You must first build and push Docker images from your `play-with-containers` project.
+
+This project uses pre-built Docker images hosted on Docker Hub. You can either use the existing images or build your own.
+
+### Pre-built Images (Ready to Use)
+
+The following Docker images are publicly available and ready to use:
+
+- **Inventory App**: [`evgeny311/inventory-app:v1.0`](https://hub.docker.com/r/evgeny311/inventory-app)
+- **Billing App**: [`evgeny311/billing-app:v1.0`](https://hub.docker.com/r/evgeny311/billing-app)
+- **API Gateway**: [`evgeny311/api-gateway-app:v1.0`](https://hub.docker.com/r/evgeny311/api-gateway-app)
+
+**These images are already configured in the Kubernetes manifests and will be pulled automatically during deployment.**
+
+### Option 1: Use Pre-built Images (Recommended for Quick Start)
+
+Simply proceed to [Step 3: Create Kubernetes Secrets](#3-create-kubernetes-secrets) - no additional steps needed!
+
+The Kubernetes manifests are already configured with these images:
+```yaml
+# manifests/applications/inventory-app-deployment.yaml
+image: evgeny311/inventory-app:v1.0
+
+# manifests/applications/billing-app-statefulset.yaml
+image: evgeny311/billing-app:v1.0
+
+# manifests/applications/api-gateway-deployment.yaml
+image: evgeny311/api-gateway-app:v1.0
+```
+
+### Option 2: Build Your Own Images
+
+If you want to build and push your own Docker images:
+
+#### Prerequisites:
+- Docker installed and running
+- Docker Hub account
+- Logged in to Docker Hub: `docker login`
+
+#### Step 2.1: Clone the Application Source Code
 ```bash
-# Navigate to your play-with-containers project
-cd ../play-with-containers/srcs
+# Clone the play-with-containers repository
+git clone https://github.com/Evgeny311/play-with-containers.git
+cd play-with-containers
+```
+
+#### Step 2.2: Build and Push Images Manually
+```bash
+cd srcs
 
 # Build and push inventory-app
 cd inventory-app
@@ -183,16 +227,92 @@ docker push yourusername/billing-app:v1.0
 cd ../api-gateway-app
 docker build -t yourusername/api-gateway-app:v1.0 .
 docker push yourusername/api-gateway-app:v1.0
-
-# Return to orchestrator project
-cd ../../orchestrator
 ```
 
-**Update image names in manifests:**
-Replace `yourusername` with your Docker Hub username in:
-- `manifests/applications/inventory-app-deployment.yaml`
-- `manifests/applications/billing-app-statefulset.yaml`
-- `manifests/applications/api-gateway-deployment.yaml`
+Replace `yourusername` with your Docker Hub username.
+
+#### Step 2.3: Build and Push Using Helper Script (Automated)
+
+This project includes a helper script for automated building and pushing:
+```bash
+# Clone both repositories (if not already cloned)
+git clone https://github.com/Evgeny311/play-with-containers.git
+git clone https://github.com/Evgeny311/orchestrator.git
+
+cd orchestrator
+
+# Create symbolic link to play-with-containers
+ln -s ../play-with-containers play-with-containers
+
+# Run the build script
+cd build
+./build-and-push.sh yourusername v1.0
+
+# Update manifests with your Docker Hub username
+./update-manifests.sh yourusername v1.0
+```
+
+Replace `yourusername` with your Docker Hub username.
+
+**The script will:**
+1. ✅ Build all three Docker images
+2. ✅ Tag them with version `v1.0` and `latest`
+3. ✅ Push them to your Docker Hub account
+4. ✅ Update Kubernetes manifests with your image names
+
+#### Step 2.4: Verify Images on Docker Hub
+
+After building, verify your images are available:
+```bash
+# List local images
+docker images yourusername/*
+
+# Or check on Docker Hub
+# https://hub.docker.com/u/yourusername
+```
+
+### Pulling Images Manually (For Testing)
+
+If you want to test the images locally:
+```bash
+docker pull evgeny311/inventory-app:v1.0
+docker pull evgeny311/billing-app:v1.0
+docker pull evgeny311/api-gateway-app:v1.0
+
+# Run a container for testing
+docker run -p 8080:8080 evgeny311/inventory-app:v1.0
+```
+
+### Image Specifications
+
+| Image | Base Image | Size | Exposed Port |
+|-------|-----------|------|--------------|
+| `evgeny311/inventory-app:v1.0` | `python:3.11-alpine` | ~150MB | 8080 |
+| `evgeny311/billing-app:v1.0` | `python:3.11-alpine` | ~145MB | 8080 |
+| `evgeny311/api-gateway-app:v1.0` | `python:3.11-alpine` | ~140MB | 3000 |
+
+### Using Custom Images
+
+If you built your own images, update the image names in the following manifests:
+```bash
+# Update all manifests at once
+cd build
+./update-manifests.sh yourusername v1.0
+
+# Or manually edit each file:
+# - manifests/applications/inventory-app-deployment.yaml
+# - manifests/applications/billing-app-statefulset.yaml
+# - manifests/applications/api-gateway-deployment.yaml
+```
+
+Change:
+```yaml
+image: evgeny311/inventory-app:v1.0
+```
+
+To:
+```yaml
+image: yourusername/inventory-app:v1.0
 
 ### 3. Create Kubernetes Secrets
 

@@ -15,7 +15,7 @@ curl -sfL https://get.k3s.io | sh -s - server \
   --bind-address 192.168.56.100 \
   --advertise-address 192.168.56.100 \
   --node-ip 192.168.56.100 \
-  --flannel-iface eth1 \
+  --flannel-iface enp0s8 \
   --disable traefik
 
 # Wait for K3s to be ready

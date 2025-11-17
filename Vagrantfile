@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
         master.vm.provider "virtualbox" do |vb|
             vb.name = "k3s-master"
             vb.memory = "2048"
-            vb.cpus = 1
+            vb.cpus = 2
         end
 
         # Install K3s Master
@@ -48,7 +48,7 @@ Vagrant.configure("2") do |config|
         agent.vm.provider "virtualbox" do |vb|
             vb.name = "k3s-agent"
             vb.memory = "2048"
-            vb.cpus = 1
+            vb.cpus = 2
         end
 
         # Install k3s Agent
