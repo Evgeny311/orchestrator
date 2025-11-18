@@ -582,6 +582,22 @@ kubectl describe hpa inventory-app-hpa -n microservices
 ./orchestrator.sh create
 ./orchestrator.sh deploy
 ```
+### VirtualBox and Hyper-V Conflict
+
+If you're using WSL2 on Windows, you may encounter issues with VirtualBox and Hyper-V.
+
+**Solution:**
+- Use VirtualBox 7.0+ which supports Hyper-V backend
+- Or temporarily disable Hyper-V (not recommended, breaks WSL2):
+```powershell
+  bcdedit /set hypervisorlaunchtype off
+  # Reboot required
+```
+
+**Network Interface Issue:**
+If K3s fails with "unable to find interface eth1", update the scripts to use the correct interface:
+- In `scripts/install-k3s-master.sh` and `scripts/install-k3s-agent.sh`
+- Change `--flannel-iface eth1` to `--flannel-iface enp0s8`
 
 ## 🔍 Technical Details
 
